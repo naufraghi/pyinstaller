@@ -174,13 +174,16 @@ print(list(diff))
 
 
 def qt4_plugins_dir(ns='PyQt4'):
-    qt4_plugin_dirs = eval_statement(
-        "from %s.QtCore import QCoreApplication;"
-        "app=QCoreApplication([]);"
-        # For Python 2 print would give "<PyQt4.QtCore.QStringList
-        # object at 0x....>", so we need to convert each element separately
-        "str=getattr(__builtins__, 'unicode', str);" # for Python 2
-        "print([str(p) for p in app.libraryPaths()])" % ns)
+    if 'QT_PLUGIN_PATH' in os.environ and os.path.isdir(os.environ['QT_PLUGIN_PATH']):
+        qt4_plugin_dirs = str(os.environ['QT_PLUGIN_PATH']).split(os.pathsep)
+    else:
+        qt4_plugin_dirs = eval_statement(
+            "from %s.QtCore import QCoreApplication;"
+            "app=QCoreApplication([]);"
+            # For Python 2 print would give "<PyQt4.QtCore.QStringList
+            # object at 0x....>", so we need to convert each element separately
+            "str=getattr(__builtins__, 'unicode', str);" # for Python 2
+            "print([str(p) for p in app.libraryPaths()])" % ns)
     if not qt4_plugin_dirs:
         logger.error('Cannot find %s plugin directories' % ns)
         return ""
@@ -290,15 +293,15 @@ def qt4_menu_nib_dir():
 
 def qt5_plugins_dir():
     if 'QT_PLUGIN_PATH' in os.environ and os.path.isdir(os.environ['QT_PLUGIN_PATH']):
-        return str(os.environ['QT_PLUGIN_PATH'])
-
-    qt5_plugin_dirs = eval_statement(
-        "from PyQt5.QtCore import QCoreApplication;"
-        "app=QCoreApplication([]);"
-        # For Python 2 print would give "<PyQt4.QtCore.QStringList
-        # object at 0x....>", so we need to convert each element separately
-        "str=getattr(__builtins__, 'unicode', str);" # for Python 2
-        "print([str(p) for p in app.libraryPaths()])")
+        qt5_plugin_dirs = str(os.environ['QT_PLUGIN_PATH']).split(os.pathsep)
+    else:
+        qt5_plugin_dirs = eval_statement(
+            "from PyQt5.QtCore import QCoreApplication;"
+            "app=QCoreApplication([]);"
+            # For Python 2 print would give "<PyQt4.QtCore.QStringList
+            # object at 0x....>", so we need to convert each element separately
+            "str=getattr(__builtins__, 'unicode', str);" # for Python 2
+            "print([str(p) for p in app.libraryPaths()])")
     if not qt5_plugin_dirs:
         logger.error("Cannot find PyQt5 plugin directories")
         return ""
